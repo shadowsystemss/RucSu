@@ -2,32 +2,43 @@
 
 public abstract class TemplateModel
 {
+    public abstract string[] Parameters { get; }
+
     public abstract string? GetValue(string name);
 
     public virtual string GetByTemplate(string template)
     {
-        foreach (var parameter in Parameters)
+        foreach (string parameter in Parameters)
         {
             var start = $"<s${parameter}>";
             var end = $"<e${parameter}>";
 
-            var value = GetValue(parameter);
+            var name = $"<${parameter}>";
+
+            string? value = GetValue(parameter);
             if (value == null) template = RemoveByLabels(template, start, end)
-                                                        .Replace($"<${parameter}>", "");
+                                                        .Replace(name, "");
             else template = template.Replace(start, "")
                                     .Replace(end, "")
-                                    .Replace($"<${parameter}>", value);
+                                    .Replace(name, value);
         }
         return template;
     }
 
     public static string RemoveByLabels(string text, string start, string end)
     {
-        while (text.Contains(start) && text.Contains(end))
+        int startPosition;
+        int endPosition;
+
+        while (true)
         {
-            var startPosition = text.IndexOf(start);
-            text = text.Remove(startPosition, text.IndexOf(end) + end.Length - startPosition);
+            startPosition = text.IndexOf(start);
+            if (startPosition == -1) return text;
+
+            endPosition = text.IndexOf(end, startPosition);
+            if (endPosition == -1) return text;
+            
+            text = text.Remove(startPosition, endPosition + end.Length - startPosition);
         }
-        return text;
     }
 }

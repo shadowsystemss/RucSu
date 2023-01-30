@@ -29,7 +29,7 @@ public sealed class Day : TemplateModel
     {
         get
         {
-            var value = StringFormater.ShortDateName(Date);
+            string? value = StringFormater.ShortDateName(Date);
             if (value == null) return WeekDate;
             return $"{value} ({Date.ToString("dd.MM")})";
         }
@@ -44,6 +44,16 @@ public sealed class Day : TemplateModel
             return Date.ToString($"{DayOfWeek} (dd.MM)");
         }
     }
+
+    [JsonIgnore]
+    public override string[] Parameters => _Parameters;
+    private static readonly string[] _Parameters =
+    {
+        "Date",
+        "DayOfWeek",
+        "ShortDate",
+        "WeekDate"
+    };
 
     public override string? GetValue(string name)
     {

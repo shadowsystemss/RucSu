@@ -79,6 +79,22 @@ public sealed class Lesson : TemplateModel
         }
     }
 
+    [JsonIgnore]
+    public override string[] Parameters => _Parameters;
+    private static readonly string[] _Parameters =
+    {
+        "Id",
+        "Name",
+        "Teacher",
+        "Position",
+        
+        "Start",
+        "End",
+
+        "PositionEdited",
+        "Time"
+    };
+
     public override string? GetValue(string name)
     {
         return (name) switch
