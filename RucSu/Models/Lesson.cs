@@ -42,33 +42,25 @@ public sealed class Lesson : TemplateModel
     /// </summary>
     public string Teacher { get; set; }
 
-    /// <summary>
-    /// Места где будет проводится занятие.
-    /// </summary>
+    // Места где будет проводится занятие.
     public string Position { get; set; }
 
+    // Время начала занятия.
     [JsonIgnore]
-    /// <summary>
-    /// Время начала занятия.
-    /// </summary>
     public string Start
     {
         get { return LessonsStartTimes[Id-1]; }
     }
 
+    // Время конца занятия.
     [JsonIgnore]
-    /// <summary>
-    /// Время начала конца.
-    /// </summary>
     public string End
     {
         get { return LessonsEndTimes[Id - 1]; }
     }
 
+    // Редактированное место проведения занятия.
     [JsonIgnore]
-    /// <summary>
-    /// Редактированное место проведения занятия.
-    /// </summary>
     public string PositionEdited
     {
         get
@@ -77,10 +69,8 @@ public sealed class Lesson : TemplateModel
         }
     }
 
+    // Время занятия.
     [JsonIgnore]
-    /// <summary>
-    /// Время занятия.
-    /// </summary>
     public string Time
     {
         get
@@ -88,22 +78,6 @@ public sealed class Lesson : TemplateModel
             return $"{Start}—{End}";
         }
     }
-
-    [JsonIgnore]
-    public override string[] Parameters => _Parameters;
-    public static readonly string[] _Parameters = new string[]
-    {
-        "Id",
-        "Name",
-        "Teacher",
-        "Position",
-
-        "Start",
-        "End",
-
-        "PositionEdited",
-        "Time",
-    };
 
     public override string? GetValue(string name)
     {

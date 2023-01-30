@@ -2,8 +2,6 @@
 
 public abstract class TemplateModel
 {
-    public abstract string[] Parameters { get; }
-
     public abstract string? GetValue(string name);
 
     public virtual string GetByTemplate(string template)
@@ -14,7 +12,8 @@ public abstract class TemplateModel
             var end = $"<e${parameter}>";
 
             var value = GetValue(parameter);
-            if (value == null) template = RemoveByLabels(template, start, end);
+            if (value == null) template = RemoveByLabels(template, start, end)
+                                                        .Replace($"<${parameter}>", "");
             else template = template.Replace(start, "")
                                     .Replace(end, "")
                                     .Replace($"<${parameter}>", value);
@@ -24,9 +23,8 @@ public abstract class TemplateModel
 
     public static string RemoveByLabels(string text, string start, string end)
     {
-        while (text.Contains(start))
+        while (text.Contains(start) && text.Contains(end))
         {
-            if (!text.Contains(end)) break;
             var startPosition = text.IndexOf(start);
             text = text.Remove(startPosition, text.IndexOf(end) + end.Length - startPosition);
         }

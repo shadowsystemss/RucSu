@@ -6,21 +6,18 @@ namespace RucSu.Logic;
 
 public static class Parser
 {
-    /// <summary>
-    /// Шаблон дня.
-    /// </summary>
+    // Шаблон дня.
     private readonly static Regex _dayRegex = new Regex("bold\">\\s+(.*?)\\s+\\((.*?)\\)\\s+</div.*?b>(.*?)</div>\\s+</div>", RegexOptions.Compiled | RegexOptions.Singleline);
 
-    /// <summary>
-    /// Шаблон занятия.
-    /// </summary>
+    // Шаблон занятия.
     private readonly static Regex _lessonRegex = new Regex("([0-5])\\. (.*?)<.*?/>\\s+(.*?)<br/>\\s+(.*?)<", RegexOptions.Compiled | RegexOptions.Singleline);
 
     /// <summary>
     /// Получить расписание на неделю.
     /// </summary>
-    /// <param name="parameters">параметры запроса</param>
+    /// <param name="parameters">параметры</param>
     /// <param name="employee">для преподавателей?</param>
+    /// <param name="cancel">Токен отмены</param>
     public static async Task<List<Day>?> ScheduleAsync(string parameters, bool employee = false, CancellationToken? cancel = null)
     {
         string url = "https://schedule.ruc.su/";
@@ -43,23 +40,25 @@ public static class Parser
         }
 
         // Парсинг.
-        var matches = _dayRegex.Matches(raw);
+        MatchCollection matches = _dayRegex.Matches(raw);
         var schedule = new List<Day>();
 
         // Моделирование.
         foreach (Match match in matches)
         {
             // День.
-            var day = new Day(DateTime.Parse(match.Groups[1].Value), match.Groups[2].Value);
+            Day day = new Day(DateTime.Parse(match.Groups[1].Value), match.Groups[2].Value);
 
             // Занятия.
-            var lessonMatches = _lessonRegex.Matches(match.Groups[3].Value);
+            MatchCollection lessonMatches = _lessonRegex.Matches(match.Groups[3].Value);
             foreach (Match lessonMatch in lessonMatches)
             {
-                var id = Convert.ToByte(lessonMatch.Groups[1].Value);
-                var name = lessonMatch.Groups[2].Value;
-                var lesson = day.Lessons.Find(x => x.Id == id && x.Name == name);
-                var position = lessonMatch.Groups[4].Value;
+                byte id = Convert.ToByte(lessonMatch.Groups[1].Value);
+                string name = lessonMatch.Groups[2].Value;
+                string position = lessonMatch.Groups[4].Value;
+
+                Lesson? lesson = day.Lessons.Find(x => x.Id == id && x.Name == name);
+
                 if (lesson is null)
                     day.Lessons.Add(new Lesson(
                         id,
@@ -67,7 +66,7 @@ public static class Parser
                         lessonMatch.Groups[3].Value,
                         position
                     ));
-                else
+                else if (lesson.Position != position)
                     lesson.Position += Environment.NewLine + position;
             }
 
@@ -79,10 +78,6 @@ public static class Parser
     private readonly static Regex _valuesRegex = new Regex("lg\" name=\"(.*?)\".*?>(.*?)</select>", RegexOptions.Compiled | RegexOptions.Singleline);
     private readonly static Regex _selectRegex = new Regex("value=\"(.+?)\".*?>(.*?)</option>", RegexOptions.Compiled | RegexOptions.Singleline);
 
-    /// <summary>
-    /// Получить возможные значения.
-    /// </summary>
-    /// <param name="employee">для преподавателей?</param>
     public async static Task<Dictionary<string, Dictionary<string, string>>?> GetValues(bool employee = false, string? branch = null, string? year = null, CancellationToken? cancel = null)
     {
         string url = "https://schedule.ruc.su/";
@@ -90,9 +85,9 @@ public static class Parser
 
         // Параметры
         string requestParameters = "";
-        if (!string.IsNullOrWhiteSpace(branch)) requestParameters += "branch=" + branch;
+        if (!string.IsNullOrWhiteSpace(branch)) requestParameters = "branch=" + branch;
         if (!string.IsNullOrWhiteSpace(year))
-            requestParameters += string.IsNullOrWhiteSpace(requestParameters) ? '&' : "" + "year=" + year;
+            requestParameters += string.IsNullOrWhiteSpace(branch) ? '&' : "" + "year=" + year;
 
 
         // Запрос
@@ -109,14 +104,15 @@ public static class Parser
         }
 
         // Моделирование
-        var matches = _valuesRegex.Matches(raw);
+        MatchCollection matches = _valuesRegex.Matches(raw);
         var result = new Dictionary<string, Dictionary<string, string>>();
 
         foreach (Match match in matches)
         {
             var select = new Dictionary<string, string>();
 
-            var selectMatches = _selectRegex.Matches(match.Groups[2].Value);
+            MatchCollection selectMatches = _selectRegex.Matches(match.Groups[2].Value);
+
             foreach (Match? selectMatch in selectMatches)
                 if (selectMatch != null)
                 {

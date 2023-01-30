@@ -11,9 +11,6 @@ public sealed class Day : TemplateModel
         DayOfWeek = dayOfWeek;
     }
 
-    /// <summary>
-    /// Дата
-    /// </summary>
     public DateTime Date { get; set; }
 
     /// <summary>
@@ -26,10 +23,8 @@ public sealed class Day : TemplateModel
     /// </summary>
     public List<Lesson> Lessons { get; set; } = new List<Lesson>();
 
+    // Короткая дата: Завтра.
     [JsonIgnore]
-    /// <summary>
-    /// Короткая дата: Завтра.
-    /// </summary>
     public string ShortDate
     {
         get
@@ -40,11 +35,8 @@ public sealed class Day : TemplateModel
         }
     }
 
+    // День недели с датой: Понедельник (26.07).
     [JsonIgnore]
-    /// <summary>
-    /// День недели с датой: Понедельник (26.07).
-    /// </summary>
-    /// <returns></returns>
     public string WeekDate
     {
         get
@@ -52,16 +44,6 @@ public sealed class Day : TemplateModel
             return Date.ToString($"{DayOfWeek} (dd.MM)");
         }
     }
-
-    [JsonIgnore]
-    public override string[] Parameters => _Parameters;
-    public static string[] _Parameters = new string[]
-    {
-        "Date",
-        "DayOfWeek",
-        "ShortDate",
-        "WeekDate",
-    };
 
     public override string? GetValue(string name)
     {

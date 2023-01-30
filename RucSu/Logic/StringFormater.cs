@@ -26,18 +26,18 @@ public static class StringFormater
     /// <returns>Результат</returns>
     public static string LessonAsString(Lesson lesson, string? template = null)
     {
-        // Чтение шаблона.
         if (template == null) return lesson.ToString();
-
         return lesson.GetByTemplate(template);
     }
 
     /// <summary>
     /// День в строку.
     /// </summary>
-    /// <param name="day">День</param>
-    /// <param name="date">Дата</param>
-    /// <returns>Результат</returns>
+    /// <param name="day">день</param>
+    /// <param name="template">шаблон</param>
+    /// <param name="date">замена даты</param>
+    /// <param name="lessons">добавить занятия?</param>
+    /// <param name="lessonTemplate">шаблон для занятий</param>
     public static string DayAsString(Day day, string? template = null, string? date = null, bool lessons = true, string? lessonTemplate = null)
     {
         // Чтение шаблона.
